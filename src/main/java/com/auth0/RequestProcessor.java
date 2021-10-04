@@ -4,6 +4,7 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -190,6 +191,17 @@ class RequestProcessor {
                 (responseType.contains(KEY_TOKEN) || responseType.contains(KEY_ID_TOKEN));
     }
 
+    String buildRedirectUri(HttpServletRequest request) {
+        String redirectUri = request.getRequestURL().toString();
+        String proto = request.getHeader("X-Forwarded-Proto");
+        if (StringUtils.isEmpty(proto)) {
+            return redirectUri;
+        } else {
+            redirectUri = redirectUri.replace(request.getScheme(), proto.toLowerCase());
+        }
+        return redirectUri;
+    }
+
     /**
      * Obtains code request tokens (if using Code flow) and validates the ID token.
      * @param request the HTTP request
@@ -211,7 +223,7 @@ class RequestProcessor {
             }
             if (responseTypeList.contains(KEY_CODE)) {
                 // Code/Hybrid flow
-                String redirectUri = request.getRequestURL().toString();
+                String redirectUri = buildRedirectUri(request);
                 codeExchangeTokens = exchangeCodeForTokens(authorizationCode, redirectUri);
                 if (!responseTypeList.contains(KEY_ID_TOKEN)) {
                     // If we already verified the front-channel token, don't verify it again.

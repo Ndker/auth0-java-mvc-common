@@ -1,7 +1,9 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'com.auth0.gradle.oss-library.java'
+    // id 'com.auth0.gradle.oss-library.java'
+    id 'java-library'
+    id 'maven-publish'
 }
 
 repositories {
@@ -12,23 +14,23 @@ group 'com.auth0'
 
 logger.lifecycle("Using version ${version} for ${name} group $group")
 
-oss {
-    name 'mvc-auth-commons'
-    repository 'auth0-java-mvc-common'
-    organization 'auth0'
-    description 'Java library that simplifies the use of Auth0 for server-side MVC web apps'
-    baselineCompareVersion '1.5.0'
-    developers {
-        auth0 {
-            displayName = 'Auth0'
-            email = 'oss@auth0.com'
-        }
-        lbalmaceda {
-            displayName = 'Luciano Balmaceda'
-            email = 'luciano.balmaceda@auth0.com'
-        }
-    }
-}
+//oss {
+//    name 'mvc-auth-commons'
+//    repository 'auth0-java-mvc-common'
+//    organization 'auth0'
+//    description 'Java library that simplifies the use of Auth0 for server-side MVC web apps'
+//    baselineCompareVersion '1.5.0'
+//    developers {
+//        auth0 {
+//            displayName = 'Auth0'
+//            email = 'oss@auth0.com'
+//        }
+//        lbalmaceda {
+//            displayName = 'Luciano Balmaceda'
+//            email = 'luciano.balmaceda@auth0.com'
+//        }
+//    }
+//}
 
 jacocoTestReport {
     reports {
@@ -55,6 +57,27 @@ test {
         exceptionFormat "short"
     }
 }
+
+publishing {
+    publications {
+        pianoNexus(MavenPublication) {
+            group = 'io.piano.vx'
+            artifactId = 'piano-mvc-auth-commons'
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'piano_nexus'
+            url = "https://nexus.piano.io/repository/maven-releases-s3/"
+            credentials {
+                username System.getProperty("nexus.publish.username", "VX Deployer")
+                password System.getProperty("nexus.publish.password", "passed-via-env")
+            }
+        }
+    }
+}
+
 
 dependencies {
     implementation 'javax.servlet:javax.servlet-api:3.1.0'

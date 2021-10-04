@@ -453,6 +453,41 @@ public class RequestProcessorTest {
     }
 
     @Test
+    public void shouldBuildRedirectUrlCorrectlyBehindReverseProxy() {
+        AuthAPI client = new AuthAPI("me.auth0.com", "clientId", "clientSecret");
+        SignatureVerifier signatureVerifier = mock(SignatureVerifier.class);
+        IdTokenVerifier.Options verifyOptions = new IdTokenVerifier.Options("issuer", "audience", signatureVerifier);
+        RequestProcessor handler = new RequestProcessor.Builder(client, "code", verifyOptions)
+                .build();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        request.setScheme("http");
+        request.setServerName("me.auth0.com");
+        request.addHeader("multi-value-header", "one,two,three");
+        request.addHeader("empty-header", "");
+
+        String redirectUrl = handler.buildRedirectUri(request);
+        assertThat(redirectUrl, is(notNullValue()));
+        assertThat(redirectUrl, CoreMatchers.equalTo("http://me.auth0.com"));
+
+        request.addHeader("X-Forwarded-Proto", "http");
+        redirectUrl = handler.buildRedirectUri(request);
+        assertThat(redirectUrl, is(notNullValue()));
+        assertThat(redirectUrl, CoreMatchers.equalTo("http://me.auth0.com"));
+
+        request = new MockHttpServletRequest();
+        request.setScheme("http");
+        request.setServerName("me.auth0.com");
+        request.addHeader("multi-value-header", "one,two,three");
+        request.addHeader("empty-header", "");
+        request.addHeader("X-Forwarded-Proto", "https");
+        redirectUrl = handler.buildRedirectUri(request);
+
+        assertThat(redirectUrl, is(notNullValue()));
+        assertThat(redirectUrl, CoreMatchers.equalTo("https://me.auth0.com"));
+    }
+
+    @Test
     public void shouldNotSetNullNonceIfRequestTypeIsIdToken() {
         AuthAPI client = new AuthAPI("me.auth0.com", "clientId", "clientSecret");
         RequestProcessor handler = new RequestProcessor.Builder(client, "id_token", verifyOptions)

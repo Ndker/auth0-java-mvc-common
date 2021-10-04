@@ -1,0 +1,24 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+publishing {
+    publications {
+        pianoNexus(MavenPublication) {
+            group = 'io.piano.vx'
+            artifactId = 'piano-mvc-auth-commons'
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'piano_nexus'
+            url = "https://nexus.piano.io/repository/maven-releases-s3/"
+            credentials {
+                username System.getProperty("nexus.publish.username", "VX Deployer")
+                password System.getProperty("nexus.publish.password", "passed-via-env")
+            }
+        }
+    }
+}
