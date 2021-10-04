@@ -61,7 +61,7 @@ test {
 publishing {
     publications {
         pianoNexus(MavenPublication) {
-            group = 'io.piano.vx'
+            group = 'io.piano.common'
             artifactId = 'piano-mvc-auth-commons'
         }
     }
